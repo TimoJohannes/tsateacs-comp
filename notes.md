@@ -8,7 +8,7 @@
 + hardware
 
 - stm? atmega?
-- cv out maybe like [mi yarns][https://github.com/pichenettes/eurorack/tree/master/yarns] or [o_C][https://ornament-and-cri.me/]
+- cv out maybe like (mi yarns)[https://github.com/pichenettes/eurorack/tree/master/yarns] or [o_C][https://ornament-and-cri.me/]
 - cv in could be like o_C
 - per channel:
   - one encoder with button
