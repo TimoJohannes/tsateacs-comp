@@ -17,3 +17,4 @@
   - cv out
   - clock in
   
+- [dev notes from emile](https://forum.mutable-instruments.net/t/general-questions-on-diy-synthesizers-w-stm32/15248/2)
