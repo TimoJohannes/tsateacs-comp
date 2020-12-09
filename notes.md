@@ -18,3 +18,10 @@
   - clock in
   
 - [dev notes from emile](https://forum.mutable-instruments.net/t/general-questions-on-diy-synthesizers-w-stm32/15248/2)
+
+- [great intro on how to get started with stm32 and eurorack by cutlasses music](http://www.cutlasses.co.uk/tech/developing-on-stm32/)
+
+- ![neat dac](https://github.com/digitalmediabremen/tsateacs-comp/blob/main/img/stages_dac.png)
+- ![neat buffered output with leds, -8.1v to 8.1v](https://github.com/digitalmediabremen/tsateacs-comp/blob/main/img/stages_vref+output.png)
+
+- [great intro into eurorack module design + stm32](https://www.youtube.com/watch?v=Xf4CxC8exFM)
