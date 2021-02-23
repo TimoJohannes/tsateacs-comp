@@ -25,3 +25,35 @@
 - ![neat buffered output with leds, -8.1v to 8.1v](https://github.com/digitalmediabremen/tsateacs-comp/blob/main/img/stages_vref+output.png)
 
 - [great intro into eurorack module design + stm32](https://www.youtube.com/watch?v=Xf4CxC8exFM)
+
+# needed libs
+
+- encoder
+- audiolib?
+- ledmatrixdriver
+
+
+# needed pins
+
+- 2x encoder
+	- each takes two pins
+- 2x encoder LED (PWM would be nice)
+- LED matrix (Serial via i2c)
+- dac (i2s, I guess?)
+- 2x clock in (stupid digital is fine)
+- 2x analog in (neg. 8V - pos. 8V, 16 octaves, that should be plenty.)
+- 2x analog out (same as above)
+- 2x encoder switch
+
+# needed parts/living BOM
+
+- 1x Teensy 3.5
+- 1x mcp6002
+- 1x tl072
+- 2x lpt305 matrix displays
+- 1x IS31FL3730 matrix driver
+- 2x encoder with led and switch
+- 1x lm4040 voltage ref.
+- 1x some dac, using internal one rn
+- 1x eurorack header
+
