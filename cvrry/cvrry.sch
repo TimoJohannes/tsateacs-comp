@@ -1,0 +1,101 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 5
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Sheet
+S 1000 4800 900  800 
+U 6045B123
+F0 "power" 50
+F1 "power.sch" 50
+F2 "+3.3" O R 1900 5200 50 
+F3 "+3.3_A" O R 1900 5350 50 
+F4 "AREF_-2.5" O R 1900 5500 50 
+$EndSheet
+$Sheet
+S 3600 4900 1050 1150
+U 604C6CAD
+F0 "IO" 50
+F1 "IO.sch" 50
+F2 "+3.3" I L 3600 5000 50 
+F3 "+3.3_A" I L 3600 5150 50 
+F4 "AREF_-2.5" I L 3600 5300 50 
+F5 "DIN" I R 4650 5000 50 
+F6 "SCLK" I R 4650 5100 50 
+F7 "SYNC" I R 4650 5200 50 
+F8 "ADC_CV_01" O R 4650 5400 50 
+F9 "ADC_CV_02" O R 4650 5500 50 
+F10 "GATE_01" O R 4650 5600 50 
+F11 "GATE_02" O R 4650 5700 50 
+$EndSheet
+Wire Wire Line
+	1900 5200 3000 5200
+Wire Wire Line
+	3250 5200 3250 5000
+Wire Wire Line
+	3250 5000 3600 5000
+Wire Wire Line
+	1900 5350 3100 5350
+Wire Wire Line
+	3350 5350 3350 5150
+Wire Wire Line
+	3350 5150 3600 5150
+Wire Wire Line
+	1900 5500 3450 5500
+Wire Wire Line
+	3450 5500 3450 5300
+Wire Wire Line
+	3450 5300 3600 5300
+$Sheet
+S 5150 3800 950  1000
+U 608B9D09
+F0 "MCU" 50
+F1 "MCU.sch" 50
+F2 "+3.3" I L 5150 3900 50 
+F3 "+3.3_A" I L 5150 4000 50 
+F4 "GATE_01" I L 5150 4500 50 
+F5 "GATE_02" I L 5150 4600 50 
+$EndSheet
+$Sheet
+S 2500 3000 1050 800 
+U 608B9D58
+F0 "UI" 50
+F1 "UI.sch" 50
+$EndSheet
+Wire Wire Line
+	3000 5200 3000 3900
+Wire Wire Line
+	3000 3900 5150 3900
+Connection ~ 3000 5200
+Wire Wire Line
+	3000 5200 3250 5200
+Wire Wire Line
+	5150 4000 3100 4000
+Wire Wire Line
+	3100 4000 3100 5350
+Connection ~ 3100 5350
+Wire Wire Line
+	3100 5350 3350 5350
+Wire Wire Line
+	4650 5600 4950 5600
+Wire Wire Line
+	4950 5600 4950 4500
+Wire Wire Line
+	4950 4500 5150 4500
+Wire Wire Line
+	4650 5700 5000 5700
+Wire Wire Line
+	5000 5700 5000 4600
+Wire Wire Line
+	5000 4600 5150 4600
+$EndSCHEMATC
