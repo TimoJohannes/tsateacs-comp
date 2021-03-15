@@ -26,6 +26,10 @@
 
 - [great intro into eurorack module design + stm32](https://www.youtube.com/watch?v=Xf4CxC8exFM)
 
+- time is getting tight. gonna Dev the thing on Ornament and Crime
+	- gives me a good hardwarebase, og module will become a side project
+
+
 # needed libs
 
 - encoder
