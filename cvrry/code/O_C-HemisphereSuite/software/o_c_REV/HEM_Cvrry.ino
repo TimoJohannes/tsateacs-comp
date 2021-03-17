@@ -60,24 +60,78 @@ public:
             if (reset){
                 step = start;
                 if(punch_out) punch_out = end - start;
-                //end for today
             }
-            
-            
+            bool rec = 0;
+            signal = int2simfloat(cv[step]);
+            byte next_step = step + 1;
+            if (next_step > end) next_step = start;
+
+            if(mode & 0x01){
+                if (punch_out){
+                    rec = 1;
+                    cv[step] = In(0);
+                }
+            }
+            if (rec){
+                if (--punch_out == 0) mode = 0;
+            }
+        }
+        if (!(mode & 0x01))
+        {
+            Out(0, simfloat2int(signal));
+        } else {
+            Out(0, In(0));
+
         }
         
-
     }
 
+// interface shizzle
 	/* Draw the screen */
     void View() {
         gfxHeader(applet_name());
-        gfxSkyline();
+        DrawInterface();
         // Add other view code as private methods
     }
 
 	/* Called when the encoder button for this hemisphere is pressed */
-    void OnButtonPress() {
+    void OnButtonPress() {  
+        if (cursor == 3) {
+            // Check recording status
+            if (mode > 0) punch_out = end - start;
+            else punch_out = 0;
+        }
+        if (++cursor > 3) cursor = 0;
+        ResetCursor();
+
+    }
+
+
+    // encoder modes
+    void OnEncoderMove(int direction){
+        if (cursor == 0)
+        {
+            int16_t fs = start;
+            start = contrain(start + direction, 0, end - 1);
+            if(fs != start && punch_out) punch_out -= direction;
+        }
+        
+        if (cursor == 1)
+        {
+            int16_t fe = end;
+            end = contrain(end + direction, start + 1, CVRRY_MAX_STEP - 1);
+            if(fe != end && punch_out) punch_out += direction;
+        }
+        if (cursor == 2)
+        {
+            /* playmode, needs subfunction */
+        }
+        if (cursor == 3)
+        {
+            /* cv in 2 and tr 2 mapping, needs subfuntion */
+        }
+        ResetCursor();
+
     }
 
 	/* Called when the encoder for this hemisphere is rotated
@@ -93,8 +147,8 @@ public:
      */
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,9}, start);
+        Pack(data, PackLocation {9,9}, end);
         return data;
     }
 
@@ -106,22 +160,55 @@ public:
     void OnDataReceive(uint32_t data) {
         // example: unpack value at bit 0 with size of 8 bits to property_name
         // property_name = Unpack(data, PackLocation {0,8}); 
+
+        // start and stop data sizes can be smaller, when only using 16 steps
+        // but lets save the stati of cv 1 in and trig in here aswell.
+        start = Unpack(data, PackLocation {0,9});
+        end = Unpack(data, PackLocation {9,9});
     }
 
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "Digital in help";
-        help[HEMISPHERE_HELP_CVS]      = "CV in help";
-        help[HEMISPHERE_HELP_OUTS]     = "Out help";
-        help[HEMISPHERE_HELP_ENCODER]  = "123456789012345678";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=CLK 2=VAR";
+        help[HEMISPHERE_HELP_CVS]      = "1=REC 2=VAR";
+        help[HEMISPHERE_HELP_OUTS]     = "1=CV OUT 2= EOC";
+        help[HEMISPHERE_HELP_ENCODER]  = "VARS/LGTH/PLYMD";
         //                               "------------------" <-- Size Guide
     }
     
 private:
+    int cursor; // 0=Start 1=End 2=Playmode 3=IO Modes
+    SegmentDisplay segment;
 
+    int16_t cv[CVRRY_MAX_STEP];
+    simfloat signal[2];
+
+    // Transport
+    int mode = 0; // 0=Playback, 1=Rec Track 1, 2=Rec Track 2, 3= Rec Tracks 1 & 2
+    int16_t start = 0; // Start step number
+    int16_t end = CVRRY_MAX_STEP-1; // End step number
+    int16_t step = 0; // Current step
+    int16_t punch_out = 0;
+    
 };
+
+void DrawInterface(){
+    //PlayRange end
+        gfxPrint(1, 15, "Start:")
+        gfxPrint(18 + pad(100, start + 1), 15, start + 1);
+
+    //Playrange end
+        gfxPrint(pad(100, end + 1), end + 1);
+
+    //Playrange Length
+
+    //Playmode
+
+    //IO-Map
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,13 +219,13 @@ private:
 ///  should prefer to handle things in the HemisphereApplet child class
 ///  above.
 ////////////////////////////////////////////////////////////////////////////////
-ClassName ClassName_instance[2];
+Cvrry Cvrry_instance[2];
 
-void ClassName_Start(bool hemisphere) {ClassName_instance[hemisphere].BaseStart(hemisphere);}
-void ClassName_Controller(bool hemisphere, bool forwarding) {ClassName_instance[hemisphere].BaseController(forwarding);}
-void ClassName_View(bool hemisphere) {ClassName_instance[hemisphere].BaseView();}
-void ClassName_OnButtonPress(bool hemisphere) {ClassName_instance[hemisphere].OnButtonPress();}
-void ClassName_OnEncoderMove(bool hemisphere, int direction) {ClassName_instance[hemisphere].OnEncoderMove(direction);}
-void ClassName_ToggleHelpScreen(bool hemisphere) {ClassName_instance[hemisphere].HelpScreen();}
-uint32_t ClassName_OnDataRequest(bool hemisphere) {return ClassName_instance[hemisphere].OnDataRequest();}
-void ClassName_OnDataReceive(bool hemisphere, uint32_t data) {ClassName_instance[hemisphere].OnDataReceive(data);}
+void Cvrry_Start(bool hemisphere) {Cvrry_instance[hemisphere].BaseStart(hemisphere);}
+void Cvrry_Controller(bool hemisphere, bool forwarding) {Cvrry_instance[hemisphere].BaseController(forwarding);}
+void Cvrry_View(bool hemisphere) {Cvrry_instance[hemisphere].BaseView();}
+void Cvrry_OnButtonPress(bool hemisphere) {Cvrry_instance[hemisphere].OnButtonPress();}
+void Cvrry_OnEncoderMove(bool hemisphere, int direction) {Cvrry_instance[hemisphere].OnEncoderMove(direction);}
+void Cvrry_ToggleHelpScreen(bool hemisphere) {Cvrry_instance[hemisphere].HelpScreen();}
+uint32_t Cvrry_OnDataRequest(bool hemisphere) {return Cvrry_instance[hemisphere].OnDataRequest();}
+void Cvrry_OnDataReceive(bool hemisphere, uint32_t data) {Cvrry_instance[hemisphere].OnDataReceive(data);}
