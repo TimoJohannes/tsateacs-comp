@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Jason Justian
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
+// of this software and associated dsignalocumentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
@@ -150,13 +150,10 @@ private:
     int16_t punch_out = 0;
     
     void DrawInterface() {
-        // Range
         gfxIcon(1, 15, LOOP_ICON);
         gfxPrint(18 + pad(100, start + 1), 15, start + 1);
-        gfxPrint("-");
         gfxPrint(pad(100, end + 1), end + 1);
 
-        // Smooth
         gfxPrint(1, 25, "Smooth");
         if (cursor != 2 || CursorBlink()) gfxIcon(54, 25, smooth ? CHECK_ON_ICON : CHECK_OFF_ICON);
 

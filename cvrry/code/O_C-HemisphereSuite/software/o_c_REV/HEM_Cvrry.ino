@@ -62,7 +62,7 @@ public:
                 if(punch_out) punch_out = end - start;
             }
             bool rec = 0;
-            signal = int2simfloat(cv[step]);
+            signal = cv[step];
             byte next_step = step + 1;
             if (next_step > end) next_step = start;
 
@@ -78,7 +78,7 @@ public:
         }
         if (!(mode & 0x01))
         {
-            Out(0, simfloat2int(signal));
+            Out(0, signal);
         } else {
             Out(0, In(0));
 
@@ -107,19 +107,22 @@ public:
     }
 
 
-    // encoder modes
+	/* Called when the encoder for this hemisphere is rotated
+	 * direction 1 is clockwise
+	 * direction -1 is counterclockwise
+	 */
     void OnEncoderMove(int direction){
         if (cursor == 0)
         {
             int16_t fs = start;
-            start = contrain(start + direction, 0, end - 1);
+            start = constrain(start + direction, 0, end - 1);
             if(fs != start && punch_out) punch_out -= direction;
         }
         
         if (cursor == 1)
         {
             int16_t fe = end;
-            end = contrain(end + direction, start + 1, CVRRY_MAX_STEP - 1);
+            end = constrain(end + direction, start + 1, CVRRY_MAX_STEP - 1);
             if(fe != end && punch_out) punch_out += direction;
         }
         if (cursor == 2)
@@ -134,12 +137,6 @@ public:
 
     }
 
-	/* Called when the encoder for this hemisphere is rotated
-	 * direction 1 is clockwise
-	 * direction -1 is counterclockwise
-	 */
-    void OnEncoderMove(int direction) {
-    }
         
     /* Each applet may save up to 32 bits of data. When data is requested from
      * the manager, OnDataRequest() packs it up (see HemisphereApplet::Pack()) and
@@ -183,7 +180,7 @@ private:
     SegmentDisplay segment;
 
     int16_t cv[CVRRY_MAX_STEP];
-    simfloat signal[2];
+    int16_t signal;
 
     // Transport
     int mode = 0; // 0=Playback, 1=Rec Track 1, 2=Rec Track 2, 3= Rec Tracks 1 & 2
@@ -192,23 +189,29 @@ private:
     int16_t step = 0; // Current step
     int16_t punch_out = 0;
     
-};
 
-void DrawInterface(){
+    void DrawInterface(){
     //PlayRange end
-        gfxPrint(1, 15, "Start:")
-        gfxPrint(18 + pad(100, start + 1), 15, start + 1);
+        gfxPrint(1, 15, "Start:");
+        gfxPrint(pad(100, start + 1), start + 1);
 
     //Playrange end
+        gfxPrint(1, 25, "End:");
         gfxPrint(pad(100, end + 1), end + 1);
 
     //Playrange Length
+        gfxPrint(1, 35, "SeqLgth:");
+        gfxPrint(pad(100, end - start), end - start + 1);
 
     //Playmode
+        gfxPrint(1, 45, "Mode:");
+        gfxPrint(pad(100, end - start), end - start);
 
     //IO-Map
-
-}
+        gfxPrint(1, 55, "Map:");
+        gfxPrint(pad(100, end - start), end - start);
+    }
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
