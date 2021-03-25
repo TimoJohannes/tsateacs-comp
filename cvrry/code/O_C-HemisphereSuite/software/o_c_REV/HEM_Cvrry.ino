@@ -36,6 +36,10 @@ const char* const Cvrry_MODES[2] = {
     "Play", "Rec"
 }; 
 
+const char* const PLAYMODES[5] = {
+    "Play", "Inv", "Drnk", "RND", "FLP"
+};
+
 class Cvrry : public HemisphereApplet {
 public:
 
@@ -101,7 +105,7 @@ public:
             if (mode > 0) punch_out = end - start;
             else punch_out = 0;
         }
-        if (++cursor > 3) cursor = 0;
+        if (++cursor > 4) cursor = 0;
         ResetCursor();
 
     }
@@ -112,27 +116,26 @@ public:
 	 * direction -1 is counterclockwise
 	 */
     void OnEncoderMove(int direction){
-        if (cursor == 0)
+        if (cursor == 0) //start
         {
             int16_t fs = start;
             start = constrain(start + direction, 0, end - 1);
             if(fs != start && punch_out) punch_out -= direction;
         }
         
-        if (cursor == 1)
+        if (cursor == 1) //end
         {
             int16_t fe = end;
             end = constrain(end + direction, start + 1, CVRRY_MAX_STEP - 1);
             if(fe != end && punch_out) punch_out += direction;
         }
-        if (cursor == 2)
-        {
-            /* playmode, needs subfunction */
-        }
-        if (cursor == 3)
-        {
-            /* cv in 2 and tr 2 mapping, needs subfuntion */
-        }
+        if (cursor == 2) trigmode = direction > 0 ? 1 : 0;  //trgmode 
+        if (cursor == 3) cvmode = direction > 0 ? 1 : 0;    //plymode
+        if (cursor == 4){
+            playmode = constrain(playmode + direction, 0, 4);
+
+        };
+        
         ResetCursor();
 
     }
@@ -144,8 +147,11 @@ public:
      */
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,9}, start);
-        Pack(data, PackLocation {9,9}, end);
+        Pack(data, PackLocation {0,5}, start);
+        Pack(data, PackLocation {5,5}, end);
+        Pack(data, PackLocation {10,1}, trigmode);
+        Pack(data, PackLocation {11,1}, cvmode);
+        Pack(data, PackLocation {12,3}, playmode);
         return data;
     }
 
@@ -160,8 +166,12 @@ public:
 
         // start and stop data sizes can be smaller, when only using 16 steps
         // but lets save the stati of cv 1 in and trig in here aswell.
-        start = Unpack(data, PackLocation {0,9});
-        end = Unpack(data, PackLocation {9,9});
+        start = Unpack(data, PackLocation {0,5});
+        end = Unpack(data, PackLocation {5,5});
+        trigmode = Unpack(data, PackLocation {10,1});
+        cvmode = Unpack(data, PackLocation {11,1});
+        playmode = Unpack(data, PackLocation {12,3});
+
     }
 
 protected:
@@ -176,40 +186,72 @@ protected:
     }
     
 private:
-    int cursor; // 0=Start 1=End 2=Playmode 3=IO Modes
+    byte cursor; // 0=Start 1=End 2=Playmode 3=IO Modes
     SegmentDisplay segment;
 
     int16_t cv[CVRRY_MAX_STEP];
     int16_t signal;
 
     // Transport
-    int mode = 0; // 0=Playback, 1=Rec Track 1, 2=Rec Track 2, 3= Rec Tracks 1 & 2
+    byte mode = 0; // 0=Playback, 1=Rec Track 1, 2=Rec Track 2, 3= Rec Tracks 1 & 2
     int16_t start = 0; // Start step number
     int16_t end = CVRRY_MAX_STEP-1; // End step number
     int16_t step = 0; // Current step
     int16_t punch_out = 0;
     
+    // mode variables
+    bool trigmode = false; //false = on next clock sample, true = rst to step one on trg
+    bool cvmode = false; //false = clockdiv, true = oct transpose
+    byte playmode = 0;
+
+
 
     void DrawInterface(){
     //PlayRange end
-        gfxPrint(1, 15, "Start:");
-        gfxPrint(pad(100, start + 1), start + 1);
+        gfxPrint(1, 15, "RNG:");
+        gfxPrint(30, 15, start + 1);
+        gfxPrint(42, 15, "-");
+        gfxPrint(48, 15, end + 1);
+
 
     //Playrange end
-        gfxPrint(1, 25, "End:");
-        gfxPrint(pad(100, end + 1), end + 1);
+        gfxPrint(1, 25, "STP:");
+        gfxPrint(30, 25, step + 1);
 
     //Playrange Length
-        gfxPrint(1, 35, "SeqLgth:");
-        gfxPrint(pad(100, end - start), end - start + 1);
+        gfxPrint(1, 35, "TR2:");
+        if(trigmode){
+            gfxPrint(30, 35, "Rst");
+            gfxIcon(55, 35, RESET_ICON);
 
+        } else {
+            gfxPrint(30, 35, "Rec");
+            gfxIcon(55, 35, RECORD_ICON);
+            }
     //Playmode
-        gfxPrint(1, 45, "Mode:");
-        gfxPrint(pad(100, end - start), end - start);
-
+        gfxPrint(1, 45, "CV2:");
+        if(cvmode){
+            gfxPrint(30, 45, "Trs");
+            gfxIcon(55, 45, SCALE_ICON);
+        } else {
+            gfxPrint(30, 45, "Div");
+            gfxIcon(55, 45, CLOCK_ICON);
+        }
+    
     //IO-Map
-        gfxPrint(1, 55, "Map:");
-        gfxPrint(pad(100, end - start), end - start);
+        gfxPrint(1, 55, "PLY:");
+        gfxPrint(30, 55, PLAYMODES[playmode]);
+
+
+    //cursor
+            // Cursor
+        if (cursor == 0) gfxCursor(30, 22, 12);
+        if (cursor == 1) gfxCursor(48, 22, 12);
+        if (cursor == 2) gfxCursor(30, 42, 14);
+        if (cursor == 3) gfxCursor(30, 52, 14);
+        if (cursor == 4) gfxCursor(30, 62, 14);
+
+
     }
 };
 
