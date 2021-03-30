@@ -35,8 +35,8 @@ const char* const Cvrry_MODES[2] = {
     "Play", "Rec"
 }; 
 
-const char* const PLAYMODES[4] = {
-    "Play", "RND", "DRNK", "INV", "FLP"
+const char* const PLAYMODES[5] = {
+    "PLY", "RND", "DRNK", "INV", "FLP"
 };
 
 class Cvrry : public HemisphereApplet {
@@ -57,7 +57,9 @@ public:
         bool reset = Clock(1);
         
         if (Clock(0) || reset){
+
             bool rec = 0;
+            signal = cv[step];
 
             if(playmode == 0){
                 step++;
@@ -78,7 +80,12 @@ public:
                 }
             }
             if(playmode == 3){
+                signal = signal - (signal * 2);
                 step++;
+            }
+            if(playmode == 4){
+                step = CVRRY_MAX_STEP - step;
+
             }
 
 
@@ -99,9 +106,6 @@ public:
                 }
             }
             
-
-            signal = cv[step];
-
             int16_t next_step = step + 1;
             if (next_step > end) 
             {
