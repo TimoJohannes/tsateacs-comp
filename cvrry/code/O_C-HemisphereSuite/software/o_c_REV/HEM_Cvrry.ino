@@ -29,15 +29,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "SegmentDisplay.h"
 #define CVRRY_MAX_STEP 16
 
 const char* const Cvrry_MODES[2] = {
     "Play", "Rec"
 }; 
 
-const char* const PLAYMODES[5] = {
-    "Play", "Inv", "Drnk", "RND", "FLP"
+const char* const PLAYMODES[4] = {
+    "Play", "RND", "DRNK", "INV", "FLP"
 };
 
 class Cvrry : public HemisphereApplet {
@@ -49,7 +48,6 @@ public:
 
 	/* Run when the Applet is selected */
     void Start() {
-        segment.Init(SegmentSize::BIG_SEGMENTS);
     }
 
 	/* Run during the interrupt service routine, 16667 times per second */
@@ -57,22 +55,63 @@ public:
         //should the trig input 2 be remapable? maybe between reset/start sampling? for now, i will 
         //implement the reset
         bool reset = Clock(1);
-
+        
         if (Clock(0) || reset){
-            step++;
-            if (step > end || step < start) step = start;
+            bool rec = 0;
+
+            if(playmode == 0){
+                step++;
+            }
+            if(playmode == 1){
+                step = random(start, end + 1);
+
+            }
+            if(playmode == 2){
+                bool drunk = random(0, 2);
+                bool extra = random(0, 2);
+                if(drunk && !extra){
+                    step++;
+                }
+                if(drunk && extra){
+                    step = step+2;
+
+                }
+            }
+            if(playmode == 3){
+                step++;
+            }
+
+
+            //check if last step
+            if (step > end || step < start) 
+            {
+                rec = 0;
+                step = start;
+            }
+
             if (reset){
                 step = start;
-                if(punch_out) punch_out = end - start;
+                rec = 0;
+                if(punch_out)
+                {
+                    rec = 0;
+                    punch_out = end - start;
+                }
             }
-            bool rec = 0;
-            signal = cv[step];
-            byte next_step = step + 1;
-            if (next_step > end) next_step = start;
+            
 
-            if(mode & 0x01){
+            signal = cv[step];
+
+            int16_t next_step = step + 1;
+            if (next_step > end) 
+            {
+                rec = 0;
+                next_step = start;
+            }
+            if(mode & (0x01 << 0)){
                 if (punch_out){
                     rec = 1;
+                    check = true;
                     cv[step] = In(0);
                 }
             }
@@ -80,7 +119,7 @@ public:
                 if (--punch_out == 0) mode = 0;
             }
         }
-        if (!(mode & 0x01))
+        if (!(mode & (0x01<<0)))
         {
             Out(0, signal);
         } else {
@@ -100,7 +139,7 @@ public:
 
 	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {  
-        if (cursor == 3) {
+        if (cursor == 2) {
             // Check recording status
             if (mode > 0) punch_out = end - start;
             else punch_out = 0;
@@ -129,7 +168,11 @@ public:
             end = constrain(end + direction, start + 1, CVRRY_MAX_STEP - 1);
             if(fe != end && punch_out) punch_out += direction;
         }
-        if (cursor == 2) trigmode = direction > 0 ? 1 : 0;  //trgmode 
+        if (cursor == 2)
+        { 
+            trigmode = direction > 0 ? 1 : 0;  //trgmode 
+            mode = constrain(mode + direction, 0, 1);
+        }
         if (cursor == 3) cvmode = direction > 0 ? 1 : 0;    //plymode
         if (cursor == 4){
             playmode = constrain(playmode + direction, 0, 4);
@@ -184,13 +227,14 @@ protected:
         help[HEMISPHERE_HELP_ENCODER]  = "VARS/LGTH/PLYMD";
         //                               "------------------" <-- Size Guide
     }
-    
+
+
 private:
     byte cursor; // 0=Start 1=End 2=Playmode 3=IO Modes
-    SegmentDisplay segment;
 
     int16_t cv[CVRRY_MAX_STEP];
     int16_t signal;
+    bool check = false;
 
     // Transport
     byte mode = 0; // 0=Playback, 1=Rec Track 1, 2=Rec Track 2, 3= Rec Tracks 1 & 2
@@ -219,14 +263,14 @@ private:
         gfxPrint(30, 25, step + 1);
 
     //Playrange Length
-        gfxPrint(1, 35, "TR2:");
-        if(trigmode){
-            gfxPrint(30, 35, "Rst");
-            gfxIcon(55, 35, RESET_ICON);
+        gfxPrint(1, 35, "REC:");
+        if(mode){
+            gfxPrint(30, 35, "REC");
+            gfxIcon(55, 35, RECORD_ICON);
 
         } else {
-            gfxPrint(30, 35, "Rec");
-            gfxIcon(55, 35, RECORD_ICON);
+            gfxPrint(30, 35, "PLY");
+            gfxIcon(55, 35, PLAY_ICON);
             }
     //Playmode
         gfxPrint(1, 45, "CV2:");
@@ -239,12 +283,14 @@ private:
         }
     
     //IO-Map
-        gfxPrint(1, 55, "PLY:");
-        gfxPrint(30, 55, PLAYMODES[playmode]);
-
+        //gfxPrint(1, 55, "PLY:");
+        //gfxPrint(30, 55, PLAYMODES[playmode]);
+        gfxPrint(50, 55, cv[step]);
+        gfxPrint(40, 55, mode);
+        gfxPrint(30, 55, cursor);
+        gfxPrint(15, 55, playmode);
 
     //cursor
-            // Cursor
         if (cursor == 0) gfxCursor(30, 22, 12);
         if (cursor == 1) gfxCursor(48, 22, 12);
         if (cursor == 2) gfxCursor(30, 42, 14);
